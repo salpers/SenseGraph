@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.hardware.Sensor;
 import android.os.Bundle;
 
 import java.util.ArrayList;
@@ -22,9 +23,14 @@ public class SelectSensorDialogFragment extends DialogFragment {
     private NoticeDialogListener mListener;
     private ArrayList<Integer> mSelectedItems;
     private String[] mSensorList;
+    private Sensor[] mhSensorList;
 
-    public void setmSensorList(String[] mSensorList) {
-        this.mSensorList = mSensorList;
+    public void setmSensorList(Sensor[] sensorList) {
+        this.mhSensorList = sensorList;
+        mSensorList = new String[sensorList.length];
+        for(int i = 0; i < mhSensorList.length; i++){
+            mSensorList[i] = mhSensorList[i].getName();
+        }
     }
 
     public int[] getSelectedItems(){
@@ -58,9 +64,9 @@ public class SelectSensorDialogFragment extends DialogFragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which, boolean isChecked) {
                         if (isChecked) {
-                            mSelectedItems.add(which);
+                            mSelectedItems.add(mhSensorList[which].getType());
                         } else if (mSelectedItems.contains(which)) {
-                            mSelectedItems.remove(Integer.valueOf(which));
+                            mSelectedItems.remove(mhSensorList[which].getType());
                         }
                     }
                 })

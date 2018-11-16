@@ -103,12 +103,12 @@ public class RecordActivity extends AppCompatActivity {
             mSensorThread.start();
             Handler mSensorHandler = new Handler(mSensorThread.getLooper());
             SensorListener mSensorListener = new SensorListener(this);
-            mSensorManager.registerListener(mSensorListener, mSensor, SensorManager.SENSOR_DELAY_NORMAL, mSensorHandler);
             LineGraphSeries<DataPoint> mSeriesEle = new LineGraphSeries<DataPoint>();
             mGraph.addSeries(mSeriesEle);
             mSeries[i] = mSeriesEle;
             threads[i] = mSensorThread;
             sensorListeners[i] = mSensorListener;
+            mSensorManager.registerListener(mSensorListener, mSensor, SensorManager.SENSOR_DELAY_NORMAL, mSensorHandler);
         }
         Log.d("SensorInfo", "SensorThreadCreation finished");
     }
@@ -122,7 +122,7 @@ public class RecordActivity extends AppCompatActivity {
     }
 
     public void updateData(DataPoint dp, int threadId) {
-        Log.d("mSeriesLog", mSeries[threadId]==null?"series null"+threadId:"series ok");
+        Log.d("mSeriesLog", mSeries[threadId]==null?"series null "+threadId:"series ok");
         mSeries[threadId].appendData(dp, dp.getX() >= 30, 10000);
         myHelper.insertData(dp.getX(), dp.getY(), chosenSensorTypes[threadId], sessionId);
     }

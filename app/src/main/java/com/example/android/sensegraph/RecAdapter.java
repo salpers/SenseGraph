@@ -1,8 +1,6 @@
 package com.example.android.sensegraph;
 
 import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +11,8 @@ import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
+import java.util.Arrays;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -21,16 +21,17 @@ public class RecAdapter extends RecyclerView.Adapter<RecAdapter.RecViewHolder> {
     private static final String TAG = RecAdapter.class.getSimpleName();
     final private ListItemClickListener mOnClickListener;
     private static int viewHolderCount;
-    /*private DataPoint[][] dpArray;*/
+    private DataPoint[][][] dpArray;
     private int mNumberItems;
 
     public interface ListItemClickListener {
         void onListItemClick(int clickedItemIndex);
     }
 
-    public RecAdapter(int numberOfItems, ListItemClickListener listener) {
-      /*  this.dpArray = dpArray;*/
-        mNumberItems = numberOfItems;
+    public RecAdapter(DataPoint[][][] dataset, ListItemClickListener listener) {
+        /*  this.dpArray = dpArray;*/
+        dpArray = dataset;
+        mNumberItems = dataset.length < 10 ? dataset.length : 10;
         mOnClickListener = listener;
         viewHolderCount = 0;
 
@@ -47,7 +48,7 @@ public class RecAdapter extends RecyclerView.Adapter<RecAdapter.RecViewHolder> {
         RecViewHolder viewHolder = new RecViewHolder(view);
         viewHolder.listItemRecDetView.setText("ViewHolder index: " + viewHolderCount);
         //SET WITH DATA FROM SQL
-        //viewHolder.recGraph.addSeries(new LineGraphSeries());
+        //viewHolder.mGraph.addSeries(new LineGraphSeries());
         viewHolderCount++;
         Log.d(TAG, "onCreateViewHolder: number of ViewHolders created: "
                 + viewHolderCount);
@@ -56,9 +57,15 @@ public class RecAdapter extends RecyclerView.Adapter<RecAdapter.RecViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull RecViewHolder holder, int position) {
-        Log.d(TAG, "#" + position);
-        holder.bind("" + position);
+        Log.d("ViewHolder Generation", "Position: "+position);
+        for (DataPoint[] dp : dpArray[position]) {
+            LineGraphSeries<DataPoint> lgs = new LineGraphSeries<>();
+            Log.d("ViewHolder Creation", Arrays.toString(dpArray[position]));
+            lgs.resetData(dp);
+            holder.mGraph.addSeries(lgs);
+        }
     }
+
 
     @Override
     public int getItemCount() {
@@ -68,18 +75,13 @@ public class RecAdapter extends RecyclerView.Adapter<RecAdapter.RecViewHolder> {
     class RecViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         TextView listItemRecDetView;
-        GraphView recGraph;
+        GraphView mGraph;
 
         public RecViewHolder(View itemView) {
             super(itemView);
-            listItemRecDetView = (TextView) itemView.findViewById(R.id.tv_item_number);
-            recGraph = (GraphView) itemView.findViewById(R.id.tv_graphView);
-
-            //listItemRecDetView.setText("TEST");
-            LineGraphSeries lgs = new LineGraphSeries();
-
-            lgs.resetData(new DataPoint[]{new DataPoint(0, 0), new DataPoint(1, 0), new DataPoint(3, 4), new DataPoint(4, 5)});
-            recGraph.addSeries(lgs);
+            listItemRecDetView = itemView.findViewById(R.id.tv_item_number);
+            mGraph = itemView.findViewById(R.id.tv_graphView);
+            setUpGraphview();
             itemView.setOnClickListener(this);
         }
 
@@ -91,6 +93,19 @@ public class RecAdapter extends RecyclerView.Adapter<RecAdapter.RecViewHolder> {
         public void onClick(View v) {
             int clickedPosition = getAdapterPosition();
             mOnClickListener.onListItemClick(clickedPosition);
+        }
+
+        private void setUpGraphview() {
+            mGraph.getViewport().setXAxisBoundsManual(true);
+            mGraph.getViewport().setMinX(0);
+            mGraph.getViewport().setMaxX(30);
+
+            mGraph.getViewport().setYAxisBoundsManual(true);
+            mGraph.getViewport().setMinY(-1000);
+            mGraph.getViewport().setMaxY(50000);
+            mGraph.getViewport().setScrollable(true);
+            mGraph.getViewport().setScalable(true);
+            mGraph.getGridLabelRenderer().setNumHorizontalLabels(5);
         }
 
     }
